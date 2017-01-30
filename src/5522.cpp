@@ -125,9 +125,6 @@ public:
 			printf("shit\n");
 			table = NetworkTable::GetTable("/GRIP/Shit");
 			compensate = 0;
-			bigshit = 0;
-			smallshit = 0;
-			compensate = 0;
 			gyro.Calibrate();
 			printf("ManualMode\n");
 		}
