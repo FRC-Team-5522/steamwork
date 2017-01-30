@@ -14,28 +14,9 @@ class Robot : public SampleRobot
 	AnalogInput ultrasonic;
 	DigitalInput di;
 	ADXRS450_Gyro gyro;
-	bool Sob2;
-	bool Sob4;
-	bool Sob5;
-	bool Sob6;
-	bool Sob7;
-	bool Sob8;
-	bool sob9;
-	bool Sob12;
-	bool aSob2;
-	bool aSob4;
-	bool aSob5;
-	bool aSob6;
-	bool aSob7;
-	bool aSob8;
-	bool asob11;
-	bool aSob12;
-	bool sos;
-	int oh;
 	int bigshit;
 	int smallshit;
 	float compensate;
-	bool autoDriveMode;
 	Talon MLeftFront;
 	Talon MLeftRear;
 	Talon MRightFront;
@@ -143,27 +124,10 @@ public:
 			}
 			printf("shit\n");
 			table = NetworkTable::GetTable("/GRIP/Shit");
-			Sob2 = false;
-			Sob4 = false;
-			Sob5 = false;
-			Sob6 = false;
-			Sob7 = false;
-			Sob8 = false;
-			sob9 = false;
-			Sob12 = false;
-			sos = false;
-			aSob2 = false;
-			aSob4 = false;
-			aSob5 = false;
-			aSob6 = false;
-			aSob7 = false;
-			aSob8 = false;
-			asob11 = false;
-			aSob12 = false;
+			compensate = 0;
 			bigshit = 0;
 			smallshit = 0;
 			compensate = 0;
-			oh = 0;
 			gyro.Calibrate();
 			printf("ManualMode\n");
 		}
@@ -301,6 +265,7 @@ public:
 			MRightFront.Set(m_stick1.GetY() * -0.3);
 			MLeftRear.Set(m_stick1.GetY() * 0.3);*/
 			printf("angle=%f\n", gyro.GetAngle());
+
 			Wait(0.05);
 		}
 	}
