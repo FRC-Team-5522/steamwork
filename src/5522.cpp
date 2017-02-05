@@ -16,11 +16,15 @@ class Robot : public SampleRobot
 	ADXRS450_Gyro gyro;
 	int bigshit;
 	int smallshit;
+	int oh;
+	float last_dis;
 	float compensate;
 	Talon MLeftFront;
 	Talon MLeftRear;
 	Talon MRightFront;
 	Talon MRightRear;
+	Talon HANGGG;
+	frc::DoubleSolenoid m_doubleSolenoid { 1, 2 };
 	const double kUpdatePeriod = 0.005;
 	const double valueToCMs = 0.3175;
 /*	void autoTargeting()
@@ -107,9 +111,10 @@ public:
 		MLeftRear(4),
 		MRightFront(2),
 		MRightRear(3),
+		HANGGG(5),
 		gyro(),
 		di(1),
-		ultrasonic(3)
+		ultrasonic(1)
 	{
 	}
 	void RobotInit()
@@ -125,6 +130,8 @@ public:
 			printf("shit\n");
 			table = NetworkTable::GetTable("/GRIP/Shit");
 			compensate = 0;
+			last_dis = 0;
+			oh = 0;
 			gyro.Calibrate();
 			printf("ManualMode\n");
 		}
@@ -135,9 +142,9 @@ public:
 		//开店之后Calibration之后 比赛那边会调试很久很久 累积误差会增大 所以在auto开始的时候先reset一下！！！谨记！！！！！！！！
 		while(IsTest() && IsEnabled())
 		{
-			/*printf("%f cm\n", (ultrasonic.GetVoltage() * 102.3));
-			Wait(0.1);*/
-			printf("%f°\n", gyro.GetAngle());
+			printf("%f cm\n", (ultrasonic.GetVoltage() * 102.3));
+			//Wait(0.1);
+			//printf("%f°\n", gyro.GetAngle());
 			Wait(0.1);
 			/*printf("x=%f y=%f z=%f\n", m_stick1.GetX(), m_stick1.GetY(), m_stick1.GetZ());
 			Wait(0.1);*/
@@ -149,10 +156,37 @@ public:
     	{
     		printf("AUTO\n");
     		gyro.Reset();
-    		while(ultrasonic.GetVoltage() * 102.3 > 35)
+    		gyro.Calibrate();
+    		Wait(1.5);
+    		printf("angle=%f°\n", gyro.GetAngle());
+    		while(oh < 135000)
     		{
-
+    			if(gyro.GetAngle() < 2 && gyro.GetAngle() > -2)
+    			{
+    				MLeftFront.Set(0.3);
+    				MRightRear.Set(-0.3);
+    				MRightFront.Set(-0.3);
+    				MLeftRear.Set(0.3);
+    			}
+    			if(gyro.GetAngle() > 2)
+    			{
+    				MLeftFront.Set(0.2);
+    				MRightRear.Set(-0.3);
+    				MRightFront.Set(-0.3);
+    				MLeftRear.Set(0.2);
+    			}
+    			if(gyro.GetAngle() < -2)
+    			{
+    				MLeftFront.Set(0.3);
+    				MRightRear.Set(-0.2);
+    				MRightFront.Set(-0.2);
+    				MLeftRear.Set(0.3);
+    			}
+    			oh++;
     		}
+    		allStop();
+    		Wait(2);
+    		printf("angle=%f°\n", gyro.GetAngle());
     	}
     }
 	void OperatorControl() {
@@ -172,87 +206,87 @@ public:
 			{
 				if(m_stick1.GetX() == 0)
 				{
-					MLeftFront.Set(m_stick1.GetY() * -0.8);
-					MRightRear.Set(m_stick1.GetY() * 0.8);
-					MRightFront.Set(m_stick1.GetY() * 0.8);
-					MLeftRear.Set(m_stick1.GetY() * -0.8);
+					MLeftFront.Set(m_stick1.GetY() * -0.4 + compensate);
+					MRightRear.Set(m_stick1.GetY() * 0.4 + compensate);
+					MRightFront.Set(m_stick1.GetY() * 0.4 + compensate);
+					MLeftRear.Set(m_stick1.GetY() * -0.4 + compensate);
 				}
 				if(m_stick1.GetY() == 0)
 				{
-					MLeftFront.Set(m_stick1.GetX() * 0.8);
-					MRightRear.Set(m_stick1.GetX() * -0.8);
-					MRightFront.Set(m_stick1.GetX() * 0.8);
-					MLeftRear.Set(m_stick1.GetX() * -0.8);
+					MLeftFront.Set(m_stick1.GetX() * 0.4 + compensate);
+					MRightRear.Set(m_stick1.GetX() * -0.4 + compensate);
+					MRightFront.Set(m_stick1.GetX() * 0.4 + compensate);
+					MLeftRear.Set(m_stick1.GetX() * -0.4 + compensate);
 				}
 				if(fabs(m_stick1.GetX())/fabs(m_stick1.GetY()) >= 0 && fabs(m_stick1.GetX())/fabs(m_stick1.GetY()) <= 1 && m_stick1.GetX() < 0 && m_stick1.GetY() < 0)
 				{
-					MLeftFront.Set(((256 + 340 * m_stick1.GetX())/255)*0.8 + compensate);
-					MRightRear.Set(((256 + 340 * m_stick1.GetX())/255)*-0.8 + compensate);
-					MRightFront.Set(m_stick1.GetY()*0.8 + compensate);
-					MLeftRear.Set(m_stick1.GetY()*-0.8 + compensate);
+					MLeftFront.Set(((256 + 340 * m_stick1.GetX())/255)*0.4 + compensate);
+					MRightRear.Set(((256 + 340 * m_stick1.GetX())/255)*-0.4 + compensate);
+					MRightFront.Set(m_stick1.GetY()*0.4 + compensate);
+					MLeftRear.Set(m_stick1.GetY()*-0.4 + compensate);
 					//printf("You are in the 8th quadrant\n");
 					//printf("speed of LFRR=%f\n", (256 + 340 * m_stick1.GetX())/255);
 				}
 				if(fabs(m_stick1.GetX())/fabs(m_stick1.GetY()) > 1 && m_stick1.GetX() < 0 && m_stick1.GetY() < 0)
 				{
-					MLeftFront.Set(((-256 - 340 * m_stick1.GetY())/255)*0.8 + compensate);
-					MRightRear.Set(((-256 - 340 * m_stick1.GetY())/255)*-0.8 + compensate);
-					MRightFront.Set(m_stick1.GetX() * 0.8 + compensate);
-					MLeftRear.Set(m_stick1.GetX() * -0.8 + compensate);
+					MLeftFront.Set(((-256 - 340 * m_stick1.GetY())/255)*0.4 + compensate);
+					MRightRear.Set(((-256 - 340 * m_stick1.GetY())/255)*-0.4 + compensate);
+					MRightFront.Set(m_stick1.GetX() * 0.4 + compensate);
+					MLeftRear.Set(m_stick1.GetX() * -0.4 + compensate);
 					//printf("You are in the 7th quadrant\n");
 					//printf("speed of LFRR=%f\n", (-256 - 340 * m_stick1.GetY())/255);
 				}
 				if(fabs(m_stick1.GetX())/fabs(m_stick1.GetY()) >= 0 && fabs(m_stick1.GetX())/fabs(m_stick1.GetY()) <= 1 && m_stick1.GetX() < 0 && m_stick1.GetY() > 0)
 				{
-					MLeftFront.Set(m_stick1.GetY() * -0.8 + compensate);
-					MRightRear.Set(m_stick1.GetY() * 0.8 + compensate);
-					MRightFront.Set(((256 + 320 * m_stick1.GetX())/-255)*-0.8 + compensate);
-					MLeftRear.Set(((256 + 320 * m_stick1.GetX())/-255)*0.8 + compensate);
+					MLeftFront.Set(m_stick1.GetY() * -0.4 + compensate);
+					MRightRear.Set(m_stick1.GetY() * 0.4 + compensate);
+					MRightFront.Set(((256 + 320 * m_stick1.GetX())/-255)*-0.4 + compensate);
+					MLeftRear.Set(((256 + 320 * m_stick1.GetX())/-255)*0.4 + compensate);
 					//printf("speed of RFLR=%f\n", (256 + 320 * m_stick1.GetX())/-255);
 					//printf("You are in the 5th quadrant\n");
 				}
 				if(fabs(m_stick1.GetX())/fabs(m_stick1.GetY()) > 1 && m_stick1.GetX() < 0 && m_stick1.GetY() > 0)
 				{
-					MLeftFront.Set(m_stick1.GetX() * 0.8 + compensate);
-					MRightRear.Set(m_stick1.GetX() * -0.8 + compensate);
-					MRightFront.Set(((-256 + 320 * m_stick1.GetY())/-255)*-0.8 + compensate);
-					MLeftRear.Set(((-256 + 320 * m_stick1.GetY())/-255)*0.8 + compensate);
+					MLeftFront.Set(m_stick1.GetX() * 0.4 + compensate);
+					MRightRear.Set(m_stick1.GetX() * -0.4 + compensate);
+					MRightFront.Set(((-256 + 320 * m_stick1.GetY())/-255)*-0.4 + compensate);
+					MLeftRear.Set(((-256 + 320 * m_stick1.GetY())/-255)*0.4 + compensate);
 					//printf("speed of RFLR=%f\n", (-256 + 320 * m_stick1.GetY())/-255);
 					//printf("You are in the 6th quadrant\n");
 				}
 				if(fabs(m_stick1.GetX())/fabs(m_stick1.GetY()) >= 0 && fabs(m_stick1.GetX())/fabs(m_stick1.GetY()) <= 1 && m_stick1.GetX() > 0 && m_stick1.GetY() < 0)
 				{
-					MLeftFront.Set(m_stick1.GetY() * -0.8 + compensate);
-					MRightRear.Set(m_stick1.GetY() * 0.8 + compensate);
-					MRightFront.Set(((256 - 330 * m_stick1.GetX())/255)*-0.8 + compensate);
-					MLeftRear.Set(((256 - 330 * m_stick1.GetX())/255)*0.8 + compensate);
+					MLeftFront.Set(m_stick1.GetY() * -0.4 + compensate);
+					MRightRear.Set(m_stick1.GetY() * 0.4 + compensate);
+					MRightFront.Set(((256 - 330 * m_stick1.GetX())/255)*-0.4 + compensate);
+					MLeftRear.Set(((256 - 330 * m_stick1.GetX())/255)*0.4 + compensate);
 					//printf("speed of RFLR=%f\n", (256 - 340 * m_stick1.GetX())/255);
 					//printf("You are in the 1th quadrant\n");
 				}
 				if(fabs(m_stick1.GetX())/fabs(m_stick1.GetY()) > 1 && m_stick1.GetX() > 0 && m_stick1.GetY() < 0)
 				{
-					MLeftFront.Set(m_stick1.GetX()*0.8 + compensate);
-					MRightRear.Set(m_stick1.GetX()*-0.8 + compensate);
-					MRightFront.Set(((256 + 330 * m_stick1.GetY())/-255)*-0.8 + compensate);
-					MLeftRear.Set(((256 + 330 * m_stick1.GetY())/-255)*0.8 + compensate);
+					MLeftFront.Set(m_stick1.GetX()*0.4 + compensate);
+					MRightRear.Set(m_stick1.GetX()*-0.4 + compensate);
+					MRightFront.Set(((256 + 330 * m_stick1.GetY())/-255)*-0.4 + compensate);
+					MLeftRear.Set(((256 + 330 * m_stick1.GetY())/-255)*0.4 + compensate);
 					//printf("speed of RFLR=%f\n", (256 + 330 * m_stick1.GetY())/-255);
 					//printf("You are in the 2th quadrant\n");
 				}
 				if(fabs(m_stick1.GetX())/fabs(m_stick1.GetY()) >= 0 && fabs(m_stick1.GetX())/fabs(m_stick1.GetY()) <= 1 && m_stick1.GetX() > 0 && m_stick1.GetY() > 0)
 				{
-					MLeftFront.Set(((-256 + 340 * m_stick1.GetX())/255)*0.8 + compensate);
-					MRightRear.Set(((-256 + 340 * m_stick1.GetX())/255)*-0.8 + compensate);
-					MRightFront.Set(m_stick1.GetY() * 0.8 + compensate);
-					MLeftRear.Set(m_stick1.GetY() * -0.8 + compensate);
+					MLeftFront.Set(((-256 + 340 * m_stick1.GetX())/255)*0.4 + compensate);
+					MRightRear.Set(((-256 + 340 * m_stick1.GetX())/255)*-0.4 + compensate);
+					MRightFront.Set(m_stick1.GetY() * 0.4 + compensate);
+					MLeftRear.Set(m_stick1.GetY() * -0.4 + compensate);
 					//printf("speed of LFRR=%f\n", (-256 + 340 * m_stick1.GetX())/255);
 					//printf("You are in the 4th quadrant\n");
 				}
 				if(fabs(m_stick1.GetX())/fabs(m_stick1.GetY()) > 1 && m_stick1.GetX() > 0 && m_stick1.GetY() > 0)
 				{
-					MLeftFront.Set(((256 - 340 * m_stick1.GetY())/255)*0.8 + compensate);
-					MRightRear.Set(((256 - 340 * m_stick1.GetY())/255)*-0.8 + compensate);
-					MRightFront.Set(m_stick1.GetX() * 0.8 + compensate);
-					MLeftRear.Set(m_stick1.GetX() * -0.8 + compensate);
+					MLeftFront.Set(((256 - 340 * m_stick1.GetY())/255)*0.4 + compensate);
+					MRightRear.Set(((256 - 340 * m_stick1.GetY())/255)*-0.4 + compensate);
+					MRightFront.Set(m_stick1.GetX() * 0.4 + compensate);
+					MLeftRear.Set(m_stick1.GetX() * -0.4 + compensate);
 					//printf("speed of LFRR=%f\n", (256 - 340 * m_stick1.GetY())/255);
 					//printf("You are in the 3th quadrant\n");
 				}
@@ -261,10 +295,36 @@ public:
 			MRightRear.Set(m_stick1.GetY() * -0.3);
 			MRightFront.Set(m_stick1.GetY() * -0.3);
 			MLeftRear.Set(m_stick1.GetY() * 0.3);*/
-			printf("angle=%f\n", gyro.GetAngle());
-
-			Wait(0.05);
+			//printf("angle=%f\n", gyro.GetAngle());
+			float v = ultrasonic.GetVoltage();
+			if(abs(round((v - last_dis))*100) > 5)
+			{
+				last_dis = v;
+				printf("v=%f dis = %f cm\n", v, (v / ( 5.0 / 1024.0) * 5.0 / 10.0));
+			}
+			if(m_stick1.GetRawButton(4))
+			{
+				HANGGG.Set(1);
+			}
+			else
+			{
+				HANGGG.Set(0);
+			}
+			if (m_stick1.GetRawButton(1))
+			{
+				m_doubleSolenoid.Set(frc::DoubleSolenoid::kForward);
+			}
+			else if (m_stick1.GetRawButton(2))
+			{
+				m_doubleSolenoid.Set(frc::DoubleSolenoid::kReverse);
+			}
+			else
+			{
+				m_doubleSolenoid.Set(frc::DoubleSolenoid::kOff);
+			}
+			Wait(0.1);
 		}
+
 	}
 };
 START_ROBOT_CLASS(Robot)
