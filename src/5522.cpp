@@ -7,6 +7,7 @@
 #include <math.h>
 #include <ADXRS450_Gyro.h>
 #include <SerialPort.h>
+#include <CameraServer.h>
 class Robot : public SampleRobot
 {
 	public:std::shared_ptr<NetworkTable> table;
@@ -22,6 +23,7 @@ class Robot : public SampleRobot
 	float last_dis;
 	float compensate;
 	float angle;
+	double compensate4visual;
 	Talon MLeftFront;
 	Talon MLeftRear;
 	Talon MRightFront;
@@ -33,7 +35,6 @@ class Robot : public SampleRobot
 	int ultrasonic_range;
 	frc::DoubleSolenoid m_doubleSolenoid { 1, 2 };
 	const double kUpdatePeriod = 0.005;
-	const double valueToCMs = 0.3175;
 	void getRange()
 	{
 		return;
@@ -212,6 +213,390 @@ class Robot : public SampleRobot
 			//printf("You are in the 3th quadrant\n");
 		}
 	}
+	void position1()
+	{
+		while(oh < 15000)//1s
+		{
+			angle = gyro.GetAngle();
+			if(angle < 2 && angle > -2)
+			{
+				MLeftFront.Set(0.5);
+				MRightRear.Set(-0.54);
+				MRightFront.Set(-0.54);
+				MLeftRear.Set(0.5);
+				//power needs to be calibrate, if u wanna go straight, simply input the same power on two side wont work.
+			}
+			if(angle > 2)
+			{
+				MLeftFront.Set(0);
+				MRightRear.Set(-0.54);
+				MRightFront.Set(-0.54);
+				MLeftRear.Set(0);
+			}
+			if(angle < -2)
+			{
+				MLeftFront.Set(0.5);
+				MRightRear.Set(0);
+				MRightFront.Set(0);
+				MLeftRear.Set(0.5);
+			}
+			oh++;
+			getRange();
+		}
+		while(oh < 48000)//1s
+		{
+			angle = gyro.GetAngle();
+			if(angle < 2 && angle > -2)
+			{
+				MLeftFront.Set(0.4);
+				MRightRear.Set(-0.44);
+				MRightFront.Set(-0.44);
+				MLeftRear.Set(0.4);
+				//power needs to be calibrate, if u wanna go straight, simply input the same power on two side wont work.
+			}
+			if(angle > 2)
+			{
+				MLeftFront.Set(0);
+				MRightRear.Set(-0.44);
+				MRightFront.Set(-0.44);
+				MLeftRear.Set(0);
+			}
+			if(angle < -2)
+			{
+				MLeftFront.Set(0.4);
+				MRightRear.Set(0);
+				MRightFront.Set(0);
+				MLeftRear.Set(0.4);
+			}
+			oh++;
+			getRange();
+		}
+		printf("step1 angle=%f\n", angle);
+		allStop();
+		Wait(0.2);
+		angle = gyro.GetAngle();
+		while(angle < 44.6|| angle > 45.2)//1.5s
+		{
+			double angleD = gyro.GetAngle();
+			double FABSangleD = fabs(angleD);
+			double anglecomp = pow(FABSangleD,2);
+			if(angle > 44.9)//The angle will be decided by the actual test result
+			{
+				MLeftFront.Set(-0.2 + anglecomp * -0.00015);
+				MRightRear.Set(-0.21 + anglecomp * -0.00015);
+				MRightFront.Set(-0.21 + anglecomp * -0.00015);
+				MLeftRear.Set(-0.2 + anglecomp * -0.00015);
+			}
+			else
+			{
+				MLeftFront.Set(0.2 + anglecomp * 0.0001);
+				MRightRear.Set(0.21 + anglecomp * 0.0001);
+				MRightFront.Set(0.21 + anglecomp * 0.0001);
+				MLeftRear.Set(0.2 + anglecomp * 0.0001);
+			}
+			Wait(0.1);
+			angle = gyro.GetAngle();
+		}
+		allStop();
+		Wait(0.1);
+		printf("step2 angle=%f\n", angle);
+		while(angle < -0.5 || angle > 0.3)//1.5s
+		{
+			double angleD = gyro.GetAngle();
+			double FABSangleD = fabs(angleD);
+			double anglecomp = pow(FABSangleD,3);
+			if(angle > -0.1)//The angle will be decided by the actual test result
+			{
+				MLeftFront.Set(-0.1 + anglecomp * -0.000015);
+				MRightRear.Set(-0.1 + anglecomp * -0.000015);
+				MRightFront.Set(-0.1 + anglecomp * -0.000015);
+				MLeftRear.Set(-0.1 + anglecomp * -0.000015);
+			}
+			else
+			{
+				MLeftFront.Set(0.1 + anglecomp * 0.00001);
+				MRightRear.Set(0.1 + anglecomp * 0.00001);
+				MRightFront.Set(0.1 + anglecomp * 0.00001);
+				MLeftRear.Set(0.1 + anglecomp * 0.00001);
+			}
+			Wait(0.1);
+			angle = gyro.GetAngle();
+		}
+		allStop();
+		Wait(0.1);
+		printf("step3 angle=%f\n", angle);
+	}
+	void position2()
+	{
+		while(oh < 15000)//1s
+		{
+			angle = gyro.GetAngle();
+			if(angle < 2 && angle > -2)
+			{
+				MLeftFront.Set(0.5);
+				MRightRear.Set(-0.54);
+				MRightFront.Set(-0.54);
+				MLeftRear.Set(0.5);
+				//power needs to be calibrate, if u wanna go straight, simply input the same power on two side wont work.
+			}
+			if(angle > 2)
+			{
+				MLeftFront.Set(0);
+				MRightRear.Set(-0.54);
+				MRightFront.Set(-0.54);
+				MLeftRear.Set(0);
+			}
+			if(angle < -2)
+			{
+				MLeftFront.Set(0.5);
+				MRightRear.Set(0);
+				MRightFront.Set(0);
+				MLeftRear.Set(0.5);
+			}
+			oh++;
+			getRange();
+		}
+		while(oh < 55221)//1s
+		{
+			angle = gyro.GetAngle();
+			if(angle < 2 && angle > -2)
+			{
+				MLeftFront.Set(0.4);
+				MRightRear.Set(-0.44);
+				MRightFront.Set(-0.44);
+				MLeftRear.Set(0.4);
+				//power needs to be calibrate, if u wanna go straight, simply input the same power on two side wont work.
+			}
+			if(angle > 2)
+			{
+				MLeftFront.Set(0);
+				MRightRear.Set(-0.44);
+				MRightFront.Set(-0.44);
+				MLeftRear.Set(0);
+			}
+			if(angle < -2)
+			{
+				MLeftFront.Set(0.4);
+				MRightRear.Set(0);
+				MRightFront.Set(0);
+				MLeftRear.Set(0.4);
+			}
+			oh++;
+			getRange();
+		}
+		printf("step1 angle=%f\n", angle);
+		allStop();
+		Wait(0.2);
+		angle = gyro.GetAngle();
+		while(angle < -0.5 || angle > 0.3)//1.5s
+		{
+			double angleD = gyro.GetAngle();
+			double FABSangleD = fabs(angleD);
+			double anglecomp = pow(FABSangleD,3);
+			if(angle > -0.1)//The angle will be decided by the actual test result
+			{
+				MLeftFront.Set(-0.1 + anglecomp * -0.000015);
+				MRightRear.Set(-0.1 + anglecomp * -0.000015);
+				MRightFront.Set(-0.1 + anglecomp * -0.000015);
+				MLeftRear.Set(-0.1 + anglecomp * -0.000015);
+			}
+			else
+			{
+				MLeftFront.Set(0.1 + anglecomp * 0.00001);
+				MRightRear.Set(0.1 + anglecomp * 0.00001);
+				MRightFront.Set(0.1 + anglecomp * 0.00001);
+				MLeftRear.Set(0.1 + anglecomp * 0.00001);
+			}
+			Wait(0.1);
+			angle = gyro.GetAngle();
+		}
+		allStop();
+		Wait(0.2);
+		printf("step2 angle=%f\n", angle);
+		while(angle < -0.5 || angle > 0.3)//1.5s
+		{
+			double angleD = gyro.GetAngle();
+			double FABSangleD = fabs(angleD);
+			double anglecomp = pow(FABSangleD,3);
+			if(angle > -0.1)//The angle will be decided by the actual test result
+			{
+				MLeftFront.Set(-0.1 + anglecomp * -0.000015);
+				MRightRear.Set(-0.1 + anglecomp * -0.000015);
+				MRightFront.Set(-0.1 + anglecomp * -0.000015);
+				MLeftRear.Set(-0.1 + anglecomp * -0.000015);
+			}
+			else
+			{
+				MLeftFront.Set(0.1 + anglecomp * 0.00001);
+				MRightRear.Set(0.1 + anglecomp * 0.00001);
+				MRightFront.Set(0.1 + anglecomp * 0.00001);
+				MLeftRear.Set(0.1 + anglecomp * 0.00001);
+			}
+			Wait(0.1);
+			angle = gyro.GetAngle();
+		}
+		allStop();
+		Wait(0.2);
+		printf("step3 angle=%f\n", angle);
+		/*std::vector<double> areas = table->GetNumberArray("area", llvm::ArrayRef<double>());
+		std::vector<double> centerXs = table->GetNumberArray("centerX", llvm::ArrayRef<double>());
+		std::vector<double> centerYs = table->GetNumberArray("centerY", llvm::ArrayRef<double>());
+		if(centerXs[1] > centerXs[2])
+		{
+			smallerone = 2;
+			biggerone = 1;
+		}
+		else
+		{
+			smallerone = 1;
+			biggerone = 2;
+		}
+		while((centerXs[smallerone] + ((centerXs[biggerone] - centerXs[smallerone]) / 2)) < 317 || (centerXs[smallerone] + ((centerXs[biggerone] - centerXs[smallerone]) / 2)) > 323)
+		{
+			compensate4visual = fabs(((centerXs[smallerone] + ((centerXs[biggerone] - centerXs[smallerone]) / 2)) - 320) * 0.001);
+			if((centerXs[smallerone] + ((centerXs[biggerone] - centerXs[smallerone]) / 2)) < 320)
+			{
+				MLeftFront.Set(0.25 + compensate4visual);
+				MRightRear.Set(-0.2535 - compensate4visual);
+				MRightFront.Set(0.2535 + compensate4visual);
+				MLeftRear.Set(-0.25 - compensate4visual);
+				//right?
+			}
+			else
+			{
+				MLeftFront.Set(-0.25 - compensate4visual);
+				MRightRear.Set(0.2535 + compensate4visual);
+				MRightFront.Set(-0.2535 - compensate4visual);
+				MLeftRear.Set(0.25 + compensate4visual);
+				//left?
+			}
+		}
+		allStop();
+		Wait(0.1);*/
+		printf("step4 angle=%f\n", angle);
+		//Turn left or turn right first will be decided by the actual test result
+		MLeftFront.Set(0.35);
+		MRightRear.Set(0);
+		MRightFront.Set(0);
+		MLeftRear.Set(0.35);
+		Wait(0.35);
+		MLeftFront.Set(-0.2);
+		MRightRear.Set(0.22);
+		MRightFront.Set(0.22);
+		MLeftRear.Set(-0.2);
+		Wait(0.075522);
+		MLeftFront.Set(0);
+		MRightRear.Set(-0.3545);
+		MRightFront.Set(-0.3545);
+		MLeftRear.Set(0);
+		Wait(0.35);
+		MLeftFront.Set(-0.2);
+		MRightRear.Set(0.22);
+		MRightFront.Set(0.22);
+		MLeftRear.Set(-0.2);
+		Wait(0.075522);
+		MLeftFront.Set(0.35);
+		MRightRear.Set(0);
+		MRightFront.Set(0);
+		MLeftRear.Set(0.35);
+		Wait(0.35);
+		MLeftFront.Set(-0.2);
+		MRightRear.Set(0.22);
+		MRightFront.Set(0.22);
+		MLeftRear.Set(-0.2);
+		Wait(0.075522);
+		MLeftFront.Set(0);
+		MRightRear.Set(-0.3545);
+		MRightFront.Set(-0.3545);
+		MLeftRear.Set(0);
+		Wait(0.35);
+		MLeftFront.Set(-0.2);
+		MRightRear.Set(0.22);
+		MRightFront.Set(0.22);
+		MLeftRear.Set(-0.2);
+		Wait(0.075522);
+		MLeftFront.Set(0.35);
+		MRightRear.Set(0);
+		MRightFront.Set(0);
+		MLeftRear.Set(0.35);
+		Wait(0.35);
+		MLeftFront.Set(-0.2);
+		MRightRear.Set(0.22);
+		MRightFront.Set(0.22);
+		MLeftRear.Set(-0.2);
+		Wait(0.075522);
+		MLeftFront.Set(0);
+		MRightRear.Set(-0.3545);
+		MRightFront.Set(-0.3545);
+		MLeftRear.Set(0);
+		Wait(0.35);
+		MLeftFront.Set(-0.2);
+		MRightRear.Set(0.22);
+		MRightFront.Set(0.22);
+		MLeftRear.Set(-0.2);
+		Wait(0.075522);
+		MLeftFront.Set(0.35);
+		MRightRear.Set(0);
+		MRightFront.Set(0);
+		MLeftRear.Set(0.35);
+		Wait(0.35);
+		MLeftFront.Set(-0.2);
+		MRightRear.Set(0.22);
+		MRightFront.Set(0.22);
+		MLeftRear.Set(-0.2);
+		Wait(0.075522);
+		MLeftFront.Set(0);
+		MRightRear.Set(-0.3545);
+		MRightFront.Set(-0.3545);
+		MLeftRear.Set(0);
+		Wait(0.35);
+		MLeftFront.Set(-0.2);
+		MRightRear.Set(0.22);
+		MRightFront.Set(0.22);
+		MLeftRear.Set(-0.2);
+		Wait(0.075522);
+		MLeftFront.Set(0.35);
+		MRightRear.Set(0);
+		MRightFront.Set(0);
+		MLeftRear.Set(0.35);
+		Wait(0.35);
+		MLeftFront.Set(-0.2);
+		MRightRear.Set(0.22);
+		MRightFront.Set(0.22);
+		MLeftRear.Set(-0.2);
+		Wait(0.075522);
+		MLeftFront.Set(0);
+		MRightRear.Set(-0.3545);
+		MRightFront.Set(-0.3545);
+		MLeftRear.Set(0);
+		Wait(0.35);
+		MLeftFront.Set(-0.2);
+		MRightRear.Set(0.22);
+		MRightFront.Set(0.22);
+		MLeftRear.Set(-0.2);
+		Wait(0.075522);
+		MLeftFront.Set(0.35);
+		MRightRear.Set(0);
+		MRightFront.Set(0);
+		MLeftRear.Set(0.35);
+		Wait(0.35);
+		MLeftFront.Set(-0.2);
+		MRightRear.Set(0.22);
+		MRightFront.Set(0.22);
+		MLeftRear.Set(-0.2);
+		Wait(0.075522);
+		MLeftFront.Set(0);
+		MRightRear.Set(-0.3545);
+		MRightFront.Set(-0.3545);
+		MLeftRear.Set(0);
+		Wait(0.35);
+		MLeftFront.Set(0.35);
+		MRightRear.Set(-0.35);
+		MRightFront.Set(-0.35);
+		MLeftRear.Set(0.35);
+		Wait(1);
+		allStop();
+	}
 	void allStop()
 	{
 		MLeftFront.Set(0);
@@ -247,7 +632,8 @@ public:
 				// ps | grep grip | grep -v grep | awk '{print $1}' | xargs kill
 				// /usr/local/frc/JRE//bin/java -Xmx50m -XX:-OmitStackTraceInFastThrow -XX:+HeapDumpOnOutOfMemoryError -jar '/home/lvuser/grip.jar' '/home/lvuser/project.grip' > /dev/null
 			}*/
-			table = NetworkTable::GetTable("/GRIP/Shit");
+			CameraServer::GetInstance()->StartAutomaticCapture();
+			//table = NetworkTable::GetTable("/GRIP/Shit");//the site needs to be changed
 			compensate = 0;
 			last_dis = 0;
 			oh = 0;
@@ -284,211 +670,11 @@ public:
     	{
     		printf("AUTO\n");
     		gyro.Reset();
-    		getRange();
+    		//getRange();
     		//printf("angle=%f¡ã\n", gyro.GetAngle());
-    		while(oh < 15000)//1s
-    		{
-    			angle = gyro.GetAngle();
-    			if(angle < 2 && angle > -2)
-    			{
-    				MLeftFront.Set(0.5);
-    				MRightRear.Set(-0.54);
-    				MRightFront.Set(-0.54);
-    				MLeftRear.Set(0.5);
-    				//power needs to be calibrate, if u wanna go straight, simply input the same power on two side wont work.
-    			}
-    			if(angle > 2)
-    			{
-    				MLeftFront.Set(0);
-    				MRightRear.Set(-0.5);
-    				MRightFront.Set(-0.5);
-    				MLeftRear.Set(0);
-    			}
-    			if(angle < -2)
-    			{
-    				MLeftFront.Set(0.5);
-    				MRightRear.Set(0);
-    				MRightFront.Set(0);
-    				MLeftRear.Set(0.5);
-    			}
-    			oh++;
-    			getRange();
-    		}
-    		while(oh < 48000)//1s
-    		{
-    			angle = gyro.GetAngle();
-    			if(angle < 2 && angle > -2)
-    			{
-    				MLeftFront.Set(0.4);
-    				MRightRear.Set(-0.44);
-    				MRightFront.Set(-0.44);
-    				MLeftRear.Set(0.4);
-    				//power needs to be calibrate, if u wanna go straight, simply input the same power on two side wont work.
-    			}
-    			if(angle > 2)
-    			{
-    				MLeftFront.Set(0);
-    				MRightRear.Set(-0.4);
-    				MRightFront.Set(-0.4);
-    				MLeftRear.Set(0);
-    			}
-    			if(angle < -2)
-    			{
-    				MLeftFront.Set(0.4);
-    				MRightRear.Set(0);
-    				MRightFront.Set(0);
-    				MLeftRear.Set(0.4);
-    			}
-    			oh++;
-    			getRange();
-    		}
-    		printf("step1 angle=%f\n", angle);
-    		allStop();
-    		Wait(0.2);
-    		angle = gyro.GetAngle();
-    		while(angle < -0.5 || angle > 0.3)//1.5s
-    		{
-    			double angleD = gyro.GetAngle();
-    			double FABSangleD = fabs(angleD);
-    			double anglecomp = pow(FABSangleD,3);
-    			if(angle > -0.1)//The angle will be decided by the actual test result
-    			{
-    				MLeftFront.Set(-0.1 + anglecomp * -0.000015);
-    				MRightRear.Set(-0.1 + anglecomp * -0.000015);
-    				MRightFront.Set(-0.1 + anglecomp * -0.000015);
-    				MLeftRear.Set(-0.1 + anglecomp * -0.000015);
-    			}
-    			else
-    			{
-    				MLeftFront.Set(0.1 + anglecomp * 0.00001);
-    				MRightRear.Set(0.1 + anglecomp * 0.00001);
-    				MRightFront.Set(0.1 + anglecomp * 0.00001);
-    				MLeftRear.Set(0.1 + anglecomp * 0.00001);
-    			}
-    			Wait(0.1);
-    			angle = gyro.GetAngle();
-    		}
-    		allStop();
-    		Wait(0.2);
-    		printf("step2 angle=%f\n", angle);
-    		while(angle < -0.5 || angle > 0.3)//1.5s
-       		{
-       			double angleD = gyro.GetAngle();
-       			double FABSangleD = fabs(angleD);
-       			double anglecomp = pow(FABSangleD,3);
-       			if(angle > -0.1)//The angle will be decided by the actual test result
-       			{
-       				MLeftFront.Set(-0.1 + anglecomp * -0.000015);
-       				MRightRear.Set(-0.1 + anglecomp * -0.000015);
-       				MRightFront.Set(-0.1 + anglecomp * -0.000015);
-       				MLeftRear.Set(-0.1 + anglecomp * -0.000015);
-       			}
-       			else
-       			{
-       				MLeftFront.Set(0.1 + anglecomp * 0.00001);
-       				MRightRear.Set(0.1 + anglecomp * 0.00001);
-       				MRightFront.Set(0.1 + anglecomp * 0.00001);
-       				MLeftRear.Set(0.1 + anglecomp * 0.00001);
-      			}
-       			Wait(0.1);
-       			angle = gyro.GetAngle();
-       		}
-    		allStop();
-    		Wait(0.2);
-    		printf("step3 angle=%f\n", angle);
-    		/*std::vector<double> areas = table->GetNumberArray("area", llvm::ArrayRef<double>());
-    		std::vector<double> centerXs = table->GetNumberArray("centerX", llvm::ArrayRef<double>());
-    		std::vector<double> centerYs = table->GetNumberArray("centerY", llvm::ArrayRef<double>());
-    		if(centerXs[1] > centerXs[2])
-    		{
-    			smallerone = 2;
-    			biggerone = 1;
-    		}
-    		else
-    		{
-    			smallerone = 1;
-    			biggerone = 2;
-    		}
-    		//This constant need to be timed by a specific constant
-    		float time = fabs(centerXs[smallerone] + ((centerXs[biggerone] - centerXs[smallerone]) / 2) - 320) * 0.3;//times some constant
-    		if((centerXs[smallerone] + ((centerXs[biggerone] - centerXs[smallerone]) / 2)) < 320)//2s
-    		{
-    			MLeftFront.Set(0.25);
-    			MRightRear.Set(-0.25);
-    			MRightFront.Set(0.25);
-    			MLeftRear.Set(-0.25);
-    			Wait(time);
-    		}
-    		else	//Test this part individually
-    		{
-    			MLeftFront.Set(-0.25);
-      			MRightRear.Set(0.25);
-       			MRightFront.Set(-0.25);
-       			MLeftRear.Set(0.25);
-       			Wait(time);
-       		}*/
-    		allStop();
-    		Wait(0.2);
-    		printf("step4 angle=%f\n", angle);
-    		//Turn left or turn right first will be decided by the actual test result
-    	    MLeftFront.Set(0.25);
-    	   	MRightRear.Set(0);
-    	    MRightFront.Set(0);
-    	    MLeftRear.Set(0.25);
-    	    Wait(0.5);
-    	    MLeftFront.Set(0);
-    	   	MRightRear.Set(-0.25);
-    	   	MRightFront.Set(-0.25);
-    	   	MLeftRear.Set(0);
-    	   	Wait(0.5);
-    	   	MLeftFront.Set(0.25);
-    	   	MRightRear.Set(0);
-    	   	MRightFront.Set(0);
-    	   	MLeftRear.Set(0.25);
-    	   	Wait(0.5);
-    	   	MLeftFront.Set(0);
-    	   	MRightRear.Set(-0.25);
-    	   	MRightFront.Set(-0.25);
-    	   	MLeftRear.Set(0);
-    	   	Wait(0.5);MLeftFront.Set(0.25);
-    	   	MRightRear.Set(0);
-    	   	MRightFront.Set(0);
-    	   	MLeftRear.Set(0.25);
-    	   	Wait(0.5);
-    	   	MLeftFront.Set(0);
-    	   	MRightRear.Set(-0.25);
-    	   	MRightFront.Set(-0.25);
-    	   	MLeftRear.Set(0);
-    	   	Wait(0.5);MLeftFront.Set(0.25);
-    	   	MRightRear.Set(0);
-    	   	MRightFront.Set(0);
-    	   	MLeftRear.Set(0.25);
-    	   	Wait(0.5);
-    	   	MLeftFront.Set(0);
-    	   	MRightRear.Set(-0.25);
-    	   	MRightFront.Set(-0.25);
-    	   	MLeftRear.Set(0);
-    	   	Wait(0.5);MLeftFront.Set(0.25);
-    	   	MRightRear.Set(0);
-    	   	MRightFront.Set(0);
-    	   	MLeftRear.Set(0.25);
-    	   	Wait(0.5);
-    	   	MLeftFront.Set(0);
-    	   	MRightRear.Set(-0.25);
-    	   	MRightFront.Set(-0.25);
-    	   	MLeftRear.Set(0);
-    	   	Wait(0.5);MLeftFront.Set(0.25);
-    	   	MRightRear.Set(0);
-    	   	MRightFront.Set(0);
-    	   	MLeftRear.Set(0.25);
-    	   	Wait(0.5);
-    	   	MLeftFront.Set(0);
-    	   	MRightRear.Set(-0.25);
-    	   	MRightFront.Set(-0.25);
-    	   	MLeftRear.Set(0);
-    	   	Wait(0.5);
-    	   	allStop();
-    	   	Wait(1);
+    		smallerone = 0;
+    		biggerone = 0;
+    		position2();
     	}
     }
 	void OperatorControl()
