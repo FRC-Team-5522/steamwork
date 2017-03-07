@@ -8,6 +8,7 @@
 #include <ADXRS450_Gyro.h>
 #include <SerialPort.h>
 #include <CameraServer.h>
+#include <Compressor.h>
 class Robot : public SampleRobot
 {
 	public:std::shared_ptr<NetworkTable> table;
@@ -15,6 +16,8 @@ class Robot : public SampleRobot
 	Joystick m_stick2;
 	DigitalInput di;
 	ADXRS450_Gyro gyro;
+	bool Sob6;
+	bool Sob8;
 	int bigshit;
 	int smallshit;
 	int oh;
@@ -29,6 +32,7 @@ class Robot : public SampleRobot
 	Talon MRightFront;
 	Talon MRightRear;
 	Talon HANGGG;
+	Compressor compressor;
 	SerialPort ultrasonic;
 	char ultrasonic_rx_buffer[10];
 	int ultrasonic_rx_buffer_ptr;
@@ -213,122 +217,9 @@ class Robot : public SampleRobot
 			//printf("You are in the 3th quadrant\n");
 		}
 	}
-	void position1()
-	{
-		while(oh < 15000)//1s
-		{
-			angle = gyro.GetAngle();
-			if(angle < 2 && angle > -2)
-			{
-				MLeftFront.Set(0.5);
-				MRightRear.Set(-0.54);
-				MRightFront.Set(-0.54);
-				MLeftRear.Set(0.5);
-				//power needs to be calibrate, if u wanna go straight, simply input the same power on two side wont work.
-			}
-			if(angle > 2)
-			{
-				MLeftFront.Set(0);
-				MRightRear.Set(-0.54);
-				MRightFront.Set(-0.54);
-				MLeftRear.Set(0);
-			}
-			if(angle < -2)
-			{
-				MLeftFront.Set(0.5);
-				MRightRear.Set(0);
-				MRightFront.Set(0);
-				MLeftRear.Set(0.5);
-			}
-			oh++;
-			getRange();
-		}
-		while(oh < 48000)//1s
-		{
-			angle = gyro.GetAngle();
-			if(angle < 2 && angle > -2)
-			{
-				MLeftFront.Set(0.4);
-				MRightRear.Set(-0.44);
-				MRightFront.Set(-0.44);
-				MLeftRear.Set(0.4);
-				//power needs to be calibrate, if u wanna go straight, simply input the same power on two side wont work.
-			}
-			if(angle > 2)
-			{
-				MLeftFront.Set(0);
-				MRightRear.Set(-0.44);
-				MRightFront.Set(-0.44);
-				MLeftRear.Set(0);
-			}
-			if(angle < -2)
-			{
-				MLeftFront.Set(0.4);
-				MRightRear.Set(0);
-				MRightFront.Set(0);
-				MLeftRear.Set(0.4);
-			}
-			oh++;
-			getRange();
-		}
-		printf("step1 angle=%f\n", angle);
-		allStop();
-		Wait(0.2);
-		angle = gyro.GetAngle();
-		while(angle < 44.6|| angle > 45.2)//1.5s
-		{
-			double angleD = gyro.GetAngle();
-			double FABSangleD = fabs(angleD);
-			double anglecomp = pow(FABSangleD,2);
-			if(angle > 44.9)//The angle will be decided by the actual test result
-			{
-				MLeftFront.Set(-0.2 + anglecomp * -0.00015);
-				MRightRear.Set(-0.21 + anglecomp * -0.00015);
-				MRightFront.Set(-0.21 + anglecomp * -0.00015);
-				MLeftRear.Set(-0.2 + anglecomp * -0.00015);
-			}
-			else
-			{
-				MLeftFront.Set(0.2 + anglecomp * 0.0001);
-				MRightRear.Set(0.21 + anglecomp * 0.0001);
-				MRightFront.Set(0.21 + anglecomp * 0.0001);
-				MLeftRear.Set(0.2 + anglecomp * 0.0001);
-			}
-			Wait(0.1);
-			angle = gyro.GetAngle();
-		}
-		allStop();
-		Wait(0.1);
-		printf("step2 angle=%f\n", angle);
-		while(angle < -0.5 || angle > 0.3)//1.5s
-		{
-			double angleD = gyro.GetAngle();
-			double FABSangleD = fabs(angleD);
-			double anglecomp = pow(FABSangleD,3);
-			if(angle > -0.1)//The angle will be decided by the actual test result
-			{
-				MLeftFront.Set(-0.1 + anglecomp * -0.000015);
-				MRightRear.Set(-0.1 + anglecomp * -0.000015);
-				MRightFront.Set(-0.1 + anglecomp * -0.000015);
-				MLeftRear.Set(-0.1 + anglecomp * -0.000015);
-			}
-			else
-			{
-				MLeftFront.Set(0.1 + anglecomp * 0.00001);
-				MRightRear.Set(0.1 + anglecomp * 0.00001);
-				MRightFront.Set(0.1 + anglecomp * 0.00001);
-				MLeftRear.Set(0.1 + anglecomp * 0.00001);
-			}
-			Wait(0.1);
-			angle = gyro.GetAngle();
-		}
-		allStop();
-		Wait(0.1);
-		printf("step3 angle=%f\n", angle);
-	}
 	void position2()
 	{
-		while(oh < 15000)//1s
+		while(oh < 15000)
 		{
 			angle = gyro.GetAngle();
 			if(angle < 2 && angle > -2)
@@ -356,7 +247,7 @@ class Robot : public SampleRobot
 			oh++;
 			getRange();
 		}
-		while(oh < 55221)//1s
+		while(oh < 45522)
 		{
 			angle = gyro.GetAngle();
 			if(angle < 2 && angle > -2)
@@ -388,7 +279,7 @@ class Robot : public SampleRobot
 		allStop();
 		Wait(0.2);
 		angle = gyro.GetAngle();
-		while(angle < -0.5 || angle > 0.3)//1.5s
+		while(angle < -0.5 || angle > 0.3)
 		{
 			double angleD = gyro.GetAngle();
 			double FABSangleD = fabs(angleD);
@@ -413,7 +304,7 @@ class Robot : public SampleRobot
 		allStop();
 		Wait(0.2);
 		printf("step2 angle=%f\n", angle);
-		while(angle < -0.5 || angle > 0.3)//1.5s
+		while(angle < -0.5 || angle > 0.3)
 		{
 			double angleD = gyro.GetAngle();
 			double FABSangleD = fabs(angleD);
@@ -435,7 +326,7 @@ class Robot : public SampleRobot
 			Wait(0.1);
 			angle = gyro.GetAngle();
 		}
-		allStop();
+		allStop();//4s
 		Wait(0.2);
 		printf("step3 angle=%f\n", angle);
 		/*std::vector<double> areas = table->GetNumberArray("area", llvm::ArrayRef<double>());
@@ -480,21 +371,11 @@ class Robot : public SampleRobot
 		MRightFront.Set(0);
 		MLeftRear.Set(0.35);
 		Wait(0.35);
-		MLeftFront.Set(-0.2);
-		MRightRear.Set(0.22);
-		MRightFront.Set(0.22);
-		MLeftRear.Set(-0.2);
-		Wait(0.075522);
 		MLeftFront.Set(0);
 		MRightRear.Set(-0.3545);
 		MRightFront.Set(-0.3545);
 		MLeftRear.Set(0);
 		Wait(0.35);
-		MLeftFront.Set(-0.2);
-		MRightRear.Set(0.22);
-		MRightFront.Set(0.22);
-		MLeftRear.Set(-0.2);
-		Wait(0.075522);
 		MLeftFront.Set(0.35);
 		MRightRear.Set(0);
 		MRightFront.Set(0);
@@ -589,12 +470,36 @@ class Robot : public SampleRobot
 		MRightRear.Set(-0.3545);
 		MRightFront.Set(-0.3545);
 		MLeftRear.Set(0);
-		Wait(0.35);
+		Wait(0.35);//stop acting like a fucking stupid snake //9.12s
 		MLeftFront.Set(0.35);
 		MRightRear.Set(-0.35);
 		MRightFront.Set(-0.35);
 		MLeftRear.Set(0.35);
-		Wait(1);
+		Wait(2);//pushpushpush
+		allStop();
+		Wait(0.1);//wait for Áõ¾ê
+		MLeftFront.Set(-0.6);
+		MRightRear.Set(0.65);
+		MRightFront.Set(0.65);
+		MLeftRear.Set(-0.6);
+		Wait(0.7);//flash back
+		allStop();
+		Wait(0.3);//let motor ´­¿ÚÆø
+		MLeftFront.Set(-0.6);
+		MRightRear.Set(0.65);
+		MRightFront.Set(-0.65);
+		MLeftRear.Set(0.6);
+		Wait(0.5);//flash left
+		MLeftFront.Set(0);
+		MRightRear.Set(0);
+		MRightFront.Set(-0.65);
+		MLeftRear.Set(0.6);
+		Wait(0.5);//flash left front
+		MLeftFront.Set(0.9);
+		MRightRear.Set(-0.95);
+		MRightFront.Set(-0.95);
+		MLeftRear.Set(0.9);
+		Wait(1.5);//rush to the opponent's driver station
 		allStop();
 	}
 	void allStop()
@@ -614,6 +519,7 @@ public:
 		MRightRear(3),
 		HANGGG(5),
 		gyro(),
+		compressor(0),
 		di(1),
 		ultrasonic(9600,
 				   frc::SerialPort::kOnboard,
@@ -634,6 +540,8 @@ public:
 			}*/
 			CameraServer::GetInstance()->StartAutomaticCapture();
 			//table = NetworkTable::GetTable("/GRIP/Shit");//the site needs to be changed
+			Sob6 = false;
+			Sob8 = false;
 			compensate = 0;
 			last_dis = 0;
 			oh = 0;
@@ -645,8 +553,10 @@ public:
 			memset(&ultrasonic_rx_buffer, 0, sizeof(ultrasonic_rx_buffer));
 			ultrasonic_rx_buffer_ptr = -1;
 			ultrasonic_range = -1;*/
+			compressor.SetClosedLoopControl(true);
 			gyro.Calibrate();
-			printf("init\n");
+			printf("Initializing...\n");
+			printf("Calibrating...\n");
 		}
 	void Test()
 	{
@@ -668,12 +578,10 @@ public:
     {
     	if (IsAutonomous() && IsEnabled())
     	{
-    		printf("AUTO\n");
+    		printf("WE WILL MAKE IT\n");
     		gyro.Reset();
     		//getRange();
     		//printf("angle=%f¡ã\n", gyro.GetAngle());
-    		smallerone = 0;
-    		biggerone = 0;
     		position2();
     	}
     }
@@ -704,6 +612,7 @@ public:
 						MLeftFront.Set(m_stick1.GetY() * -0.96 + compensate);
 						MRightRear.Set(m_stick1.GetY() * 0.93 + compensate);
 						MRightFront.Set(m_stick1.GetY() * 0.93 + compensate);
+
 						MLeftRear.Set(m_stick1.GetY() * -0.96 + compensate);
 					}
 					if(m_stick1.GetY() == 0)
@@ -806,7 +715,7 @@ public:
 				last_dis = v;
 				printf("v=%f dis = %f cm\n", v, (v / ( 5.0 / 1024.0) * 5.0 / 10.0));
 			}*/
-			if(m_stick1.GetRawButton(4))
+			if(m_stick2.GetRawButton(5))
 			{
 				HANGGG.Set(1);
 			}
@@ -814,17 +723,33 @@ public:
 			{
 				HANGGG.Set(0);
 			}
-			if (m_stick1.GetRawButton(1))
+			if (m_stick2.GetRawButton(8))
 			{
 				m_doubleSolenoid.Set(frc::DoubleSolenoid::kForward);
 			}
-			else if (m_stick1.GetRawButton(2))
+			else if (m_stick2.GetRawButton(6))
 			{
 				m_doubleSolenoid.Set(frc::DoubleSolenoid::kReverse);
 			}
 			else
 			{
 				m_doubleSolenoid.Set(frc::DoubleSolenoid::kOff);
+			}
+			if(Sob6 != m_stick2.GetRawButton(6))
+			{
+				Sob6 = !Sob6;
+				if(Sob6)
+				{
+					printf("CLOSED\n");
+				}
+			}
+			if(Sob8 != m_stick2.GetRawButton(8))
+			{
+				Sob8 = !Sob8;
+				if(Sob8)
+				{
+					printf("OPENED\n");
+				}
 			}
 			Wait(0.05);
 		}
